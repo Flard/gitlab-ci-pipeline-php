@@ -29,6 +29,7 @@ command:
   php -m:
     exit-status: 0
     stdout:
+      - amqp
       - apcu
       - bcmath
       - bz2
@@ -55,6 +56,7 @@ command:
       - xml
       - xmlrpc
       - zip
+      - amqp
 
 file:
   /usr/local/etc/php/conf.d/zz-conf.ini:

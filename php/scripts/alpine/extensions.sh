@@ -136,3 +136,24 @@ git clone "https://github.com/php-memcached-dev/php-memcached.git" \
 } > /usr/local/etc/php/conf.d/apcu-recommended.ini
 
 echo "memory_limit=512M" > /usr/local/etc/php/conf.d/zz-conf.ini
+
+# workaround for rabbitmq linking issue
+ln -s /usr/lib /usr/local/lib64
+
+git clone --branch ${RABBITMQ_VERSION} https://github.com/alanxz/rabbitmq-c.git rabbitmq \
+        && cd rabbitmq \
+        && mkdir build && cd build \
+        && cmake .. \
+        && cmake --build . --target install
+
+git clone --branch ${PHP_AMQP_VERSION} https://github.com/pdezwart/php-amqp.git php-amqp \
+        && cd php-amqp \
+        && phpize  \
+        && ./configure  \
+        && make  \
+        && make install
+
+{ \
+    echo 'extension=amqp.so'; \
+} > /usr/local/etc/php/conf.d/amqp.ini
+

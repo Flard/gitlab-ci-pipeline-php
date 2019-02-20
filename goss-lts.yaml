@@ -60,6 +60,7 @@ command:
       - xdebug
       - exif
       - imagick
+      - amqp
 
 file:
   /usr/local/etc/php/conf.d/zz-conf.ini:

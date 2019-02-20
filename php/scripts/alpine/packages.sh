@@ -5,6 +5,7 @@ set -euf -o pipefail
 apk update && apk upgrade --no-cache
 
 apk add --no-cache \
+    cmake \
     g++ \
     gcc \
     git \
@@ -14,6 +15,7 @@ apk add --no-cache \
     openssh-client \
     openssl \
     python \
+    re2c \
     rsync \
     sudo
 

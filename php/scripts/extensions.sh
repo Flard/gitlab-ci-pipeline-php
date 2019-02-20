@@ -80,6 +80,15 @@ apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yqq $buildDeps
   && docker-php-ext-install -j$(nproc) imap \
   && docker-php-source delete
 
+# workaround for rabbitmq linking issue
+ln -s /usr/lib /usr/local/lib64
+
+git clone --branch ${RABBITMQ_VERSION} https://github.com/alanxz/rabbitmq-c.git rabbitmq \
+        && cd rabbitmq \
+        && mkdir build && cd build \
+        && cmake .. \
+        && cmake --build . --target install
+
 if [[ $PHP_VERSION == "7.2" ]]; then
   docker-php-source extract \
     && git clone https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached/ \
@@ -89,7 +98,7 @@ if [[ $PHP_VERSION == "7.2" ]]; then
 
   pecl channel-update pecl.php.net \
     && pecl install redis apcu mongodb imagick xdebug \
-    && docker-php-ext-enable redis apcu mongodb imagick xdebug
+    && docker-php-ext-enable redis amqp apcu mongodb imagick xdebug
 
 elif [[ $PHP_VERSION == "7.3" ]]; then
   docker-php-source extract \
@@ -99,14 +108,14 @@ elif [[ $PHP_VERSION == "7.3" ]]; then
     && docker-php-source delete \
 
   pecl channel-update pecl.php.net \
-    && pecl install redis apcu mongodb imagick xdebug-beta \
-    && docker-php-ext-enable redis apcu mongodb imagick xdebug
+    && pecl install redis amqp apcu mongodb imagick xdebug-beta \
+    && docker-php-ext-enable redis amqp apcu mongodb imagick xdebug
 
 else
   apt-get update && docker-php-ext-install -j$(nproc) mcrypt
   pecl channel-update pecl.php.net \
-    && pecl install redis mongodb xdebug apcu memcached imagick \
-    && docker-php-ext-enable redis mongodb xdebug apcu memcached imagick
+    && pecl install redis mongodb xdebug amqp apcu memcached imagick \
+    && docker-php-ext-enable redis mongodb xdebug amqp apcu memcached imagick
 fi
 
 { \
@@ -133,5 +142,9 @@ fi
 } > /usr/local/etc/php/conf.d/apcu-recommended.ini
 
 echo "memory_limit=512M" > /usr/local/etc/php/conf.d/zz-conf.ini
+
+{ \
+    echo 'extension=amqp.so'; \
+} > /usr/local/etc/php/conf.d/amqp.ini
 
 apt-get purge -y --auto-remove $buildDeps
